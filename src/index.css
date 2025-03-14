@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@keyframes slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+  
+  .carousel__viewport {
+    overflow: hidden;
+  }
+  
+  .carousel__track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+
+  body {
+    transition: background-color 0.3s ease;
+  }
+
+  .theme-toggle {
+    transition: transform 0.3s ease;
+  }
+  
+  .theme-toggle:hover {
+    transform: rotate(15deg);
+  }
