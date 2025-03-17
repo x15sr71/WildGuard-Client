@@ -7,8 +7,9 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { UploadCloud, Search, Loader2 } from "lucide-react";
+import { UploadCloud, Search, Loader2, ConstructionIcon } from "lucide-react";
 import { PawPrint, MapPin } from "lucide-react";
+import axios from "axios";
 
 export function HomePage() {
   // Get darkMode from Layout's context
@@ -60,48 +61,53 @@ Do not attempt to handle the animal directly. Our nearest partner organization h
     "https://cdn.sanity.io/images/fa9ovwqs/production/96c657abedc8ecc492614904206fe59d46e1b72f-2542x2487.jpg?w=800&h=783&fit=crop",
   ];
 
+  interface GeminiApiResponse {
+    text?: string;
+    error?: string;
+}
+
   const handleCameraClick = () => fileInputRef.current?.click();
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-  
+
     setStatus("uploading");
     setUploadedImage(URL.createObjectURL(file));
-  
+
     // Convert file to Base64
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
-      const base64Image = reader.result?.toString().split(",")[1]; // Remove the base64 prefix
-  
-      setStatus("generating");
-  
-      try {
-        // Send the image to Gemini API
-        // const response = await fetch("https://api.gemini.ai/v1/analyze-image", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     "Authorization": `Bearer YOUR_GEMINI_API_KEY`,
-        //   },
-        //   body: JSON.stringify({ image: base64Image }),
-        // });
-  
-        // const data = await response.json();
-        // const geminiResponse = data.result || "No response from Gemini";
-  
-        setDisplayResponse(dummyResponse);
-        setStatus("complete");
-      } catch (error) {
-        console.error("Error processing image with Gemini:", error);
-        setDisplayResponse("Failed to analyze image.");
-        setStatus("complete");
-      }
-    };
-  };
-  
+        const base64Image = reader.result?.toString().split(",")[1]; // Remove base64 prefix
+        setStatus("generating");
 
+        try {
+            // Send the image to Gemini API
+            const response = await axios.post<GeminiApiResponse>(
+                "http://localhost:3000/gemini",
+                { image: base64Image },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            //console.log(base64Image)
+            console.log(response)
+            const geminiResponse = response.data.text || "No response from Gemini";
+            console.log(geminiResponse)
+            setDisplayResponse(geminiResponse);
+            setStatus("complete");
+        } catch (error) {
+          console.log(error)
+            console.error("Error processing image with Gemini:", error);
+            setDisplayResponse("Failed to analyze image.");
+            setStatus("complete");
+        }
+    };
+};
+  
   // Animate dots during analysis
   useEffect(() => {
     if (status === "generating") {
