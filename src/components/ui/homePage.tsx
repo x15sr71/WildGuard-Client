@@ -7,7 +7,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { UploadCloud, Search, Loader2, ConstructionIcon } from "lucide-react";
+import { UploadCloud, Search, Loader2 } from "lucide-react";
 import { PawPrint, MapPin } from "lucide-react";
 import axios from "axios";
 
@@ -46,15 +46,6 @@ export function HomePage() {
     },
   ];
 
-  const dummyResponse = `Our AI analysis indicates this animal appears to be a young deer with minor superficial injuries. 
-
-Recommended immediate actions:
-1. Keep a safe distance
-2. Provide fresh water
-3. Contact local wildlife rescue
-
-Do not attempt to handle the animal directly. Our nearest partner organization has been notified.`;
-
   const images = [
     "https://images.prismic.io/conservation/296c12ea-d827-4bda-bc0a-e82beb4576e2_Moholoholo+Rehab+Female+Student+feeding+antelope.jpeg?auto=compress,format&rect=0,237,1512,1008&w=1200&h=800",
     "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh75TMAAVGw33vRMnvIkTFZvMxrhLA2SBBuu3YSR_xLsg8WkO8kN0UYzbJ8rDUo5cuNFHmL8sTgofuzWagdMhjt9PpeBuJC0oQvNBzXT6XvIc_JG734bmY2Q217WqQh8NgZiduk-XD4oxA/s1600/2016_11_02+Emma+rabbit+massage-6.jpg",
@@ -64,7 +55,37 @@ Do not attempt to handle the animal directly. Our nearest partner organization h
   interface GeminiApiResponse {
     text?: string;
     error?: string;
-}
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            console.log("User location:", latitude, longitude);
+  
+            // Send location to backend
+            axios.post("http://localhost:3000/location", {
+              location: { latitude, longitude } // Send location as an object
+            })
+            .then(response => console.log("Location sent:", response.data))
+            .catch(error => console.error("Error sending location:", error));
+            
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+          }
+        );
+      } else {
+        console.error("Geolocation is not supported by this browser.");
+      }
+    }, 3000); // Delay of 3 seconds
+  
+    return () => clearTimeout(timer); // Cleanup in case component unmounts early
+  }, []);
+  
+  
 
   const handleCameraClick = () => fileInputRef.current?.click();
 
@@ -79,35 +100,35 @@ Do not attempt to handle the animal directly. Our nearest partner organization h
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
-        const base64Image = reader.result?.toString().split(",")[1]; // Remove base64 prefix
-        setStatus("generating");
+      const base64Image = reader.result?.toString().split(",")[1]; // Remove base64 prefix
+      setStatus("generating");
 
-        try {
-            // Send the image to Gemini API
-            const response = await axios.post<GeminiApiResponse>(
-                "http://localhost:3000/gemini",
-                { image: base64Image },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            //console.log(base64Image)
-            console.log(response)
-            const geminiResponse = response.data.text || "No response from Gemini";
-            console.log(geminiResponse)
-            setDisplayResponse(geminiResponse);
-            setStatus("complete");
-        } catch (error) {
-          console.log(error)
-            console.error("Error processing image with Gemini:", error);
-            setDisplayResponse("Failed to analyze image.");
-            setStatus("complete");
-        }
+      try {
+        // Send the image to Gemini API
+        const response = await axios.post<GeminiApiResponse>(
+          "http://localhost:3000/gemini",
+          { image: base64Image },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        //console.log(base64Image)
+        console.log(response)
+        const geminiResponse = response.data.text || "No response from Gemini";
+        console.log(geminiResponse)
+        setDisplayResponse(geminiResponse);
+        setStatus("complete");
+      } catch (error) {
+        console.log(error)
+        console.error("Error processing image with Gemini:", error);
+        setDisplayResponse("Failed to analyze image.");
+        setStatus("complete");
+      }
     };
-};
-  
+  };
+
   // Animate dots during analysis
   useEffect(() => {
     if (status === "generating") {
@@ -145,11 +166,10 @@ Do not attempt to handle the animal directly. Our nearest partner organization h
 
   return (
     <div
-      className={`flex flex-col items-center w-full min-h-screen ${
-        darkMode
+      className={`flex flex-col items-center w-full min-h-screen ${darkMode
           ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white"
           : "bg-gray-50 text-gray-900"
-      }`}
+        }`}
     >
       {/* Carousel */}
       <Carousel className="w-full">
@@ -173,17 +193,17 @@ Do not attempt to handle the animal directly. Our nearest partner organization h
       </Carousel>
 
       {/* Upload Section */}
-      <section className={`w-full text-center py-12 ${darkMode ? "bg-gray-800" : "bg-gray-100"}`}>
+      {/* Upload Section */}
+      <section className={`w-full text-center py-12 -mt-5 ${darkMode ? "bg-gray-800" : "bg-gray-100"}`}>
         <h2 className="text-3xl font-bold mb-2">AI-Powered Animal Rescue</h2>
         <p className={darkMode ? "text-gray-300 mb-6" : "text-gray-600 mb-6"}>
           {status === "idle" ? "Upload an animal photo for specialized help" : "Processing your request..."}
         </p>
         <div
-          className={`border-2 border-dashed p-6 rounded-md max-w-md mx-auto transition-colors ${
-            status === "idle"
+          className={`border-2 border-dashed p-6 rounded-md max-w-md mx-auto transition-colors ${status === "idle"
               ? (darkMode ? "border-green-500 hover:bg-gray-700" : "border-green-600 hover:bg-green-100") + " cursor-pointer"
               : "border-gray-400"
-          }`}
+            }`}
           onClick={status === "idle" ? handleCameraClick : undefined}
         >
           {status === "idle" ? (

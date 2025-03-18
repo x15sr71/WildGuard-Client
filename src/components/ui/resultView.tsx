@@ -26,26 +26,21 @@ export function ResultView() {
         if (displayResponse) {
             setLoading(false);
             
-            const words = displayResponse.trim().split(/\s+/); // Ensures correct splitting
-            if (words.length === 0) return;
-    
-            setVisibleText(words[0]); // Set the first word immediately
-            let index = 1;
-    
+            const fullText = displayResponse.trim();
+            let currentIndex = -1;
             const interval = setInterval(() => {
-                if (index < words.length) {
-                    setVisibleText((prev) => `${prev} ${words[index]}`);
-                    index++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 50); // Adjust speed for a smooth effect
-    
+              currentIndex++; // Increment first
+              if (currentIndex < fullText.length) {
+                setVisibleText(prev => prev + fullText[currentIndex]);
+              } else {
+                clearInterval(interval);
+              }
+            }); // Adjust typing speed
+            
+
             return () => clearInterval(interval);
         }
     }, [displayResponse]);
-    
-    
 
     return (
         <div className={`w-full flex flex-col md:flex-row p-6 gap-6 ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
@@ -62,8 +57,10 @@ export function ResultView() {
                     {loading ? (
                         <div className="text-center text-gray-500">Analyzing image...</div>
                     ) : (
-                        <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl dark:prose-invert fade-in">
-                            <ReactMarkdown>{visibleText}</ReactMarkdown>
+                        <div className="prose-sm dark:prose-invert fade-in">
+                            <ReactMarkdown>
+                                {visibleText}
+                            </ReactMarkdown>
                         </div>
                     )}
                 </div>

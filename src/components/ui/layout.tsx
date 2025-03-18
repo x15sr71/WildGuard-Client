@@ -7,7 +7,7 @@ import { PawPrint, Search, Sun, Moon } from "lucide-react";
 export function Layout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [darkMode, setDarkMode] = useState(false);
+    const [darkMode, setDarkMode] = useState(true);
 
     // Define paths where the navbar should be hidden
     const hideNavPaths = ["/volunteer-login", "/volunteer-dashboard"];
@@ -25,15 +25,16 @@ export function Layout() {
                             Wild<span className="text-[#3D8361]">Guard</span>
                         </h1>
                     </div>
-                    <div className="flex items-center gap-2 w-full md:max-w-lg mt-2 md:mt-0">
+
+                    {/* Search Bar with Icon Inside */}
+                    <div className="relative w-full md:max-w-lg mt-2 md:mt-0 md:ml-27">
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-green-500 w-5 h-5" />
                         <Input
                             placeholder="Search NGOs or locations..."
-                            className={darkMode
-                                ? "w-full bg-gray-700 border-2 border-green-500 text-white placeholder-gray-400 rounded-full px-4 py-2"
-                                : "w-full border-2 border-green-500 rounded-full px-4 py-2"}
+                            className={`w-full pl-12 pr-4 py-2 rounded-full border-2 ${darkMode ? "bg-gray-700 border-green-500 text-white placeholder-gray-400" : "border-green-500"}`}
                         />
-                        <Search className="text-green-500" />
                     </div>
+
                     <div className="flex gap-2 items-center mt-2 md:mt-0">
                         <Button
                             className="bg-green-600 text-white rounded-full px-4 hover:scale-105 active:scale-95 transition"
