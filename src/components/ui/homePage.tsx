@@ -24,27 +24,28 @@ export function HomePage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [displayResponse, setDisplayResponse] = useState("");
   const [dots, setDots] = useState("");
+  const [ngos, setNgos] = useState<any[]>([]);
 
-  const ngos = [
-    {
-      name: "Wildlife Rescue Foundation",
-      location: "Portland, OR",
-      description: "Specializing in forest wildlife rehabilitation",
-      contact: "+1 (503) 555-0192",
-    },
-    {
-      name: "Animal Hope Alliance",
-      location: "New York, NY",
-      description: "Urban animal rescue and rehabilitation",
-      contact: "+1 (212) 555-0156",
-    },
-    {
-      name: "Marine Life Protect",
-      location: "Miami, FL",
-      description: "Marine animal conservation and rescue",
-      contact: "+1 (305) 555-0134",
-    },
-  ];
+  // const ngos = [
+  //   {
+  //     name: "Wildlife Rescue Foundation",
+  //     location: "Portland, OR",
+  //     description: "Specializing in forest wildlife rehabilitation",
+  //     contact: "+1 (503) 555-0192",
+  //   },
+  //   {
+  //     name: "Animal Hope Alliance",
+  //     location: "New York, NY",
+  //     description: "Urban animal rescue and rehabilitation",
+  //     contact: "+1 (212) 555-0156",
+  //   },
+  //   {
+  //     name: "Marine Life Protect",
+  //     location: "Miami, FL",
+  //     description: "Marine animal conservation and rescue",
+  //     contact: "+1 (305) 555-0134",
+  //   },
+  // ];
 
   const images = [
     "https://images.prismic.io/conservation/296c12ea-d827-4bda-bc0a-e82beb4576e2_Moholoholo+Rehab+Female+Student+feeding+antelope.jpeg?auto=compress,format&rect=0,237,1512,1008&w=1200&h=800",
@@ -92,20 +93,20 @@ export function HomePage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+  
     setStatus("uploading");
     setUploadedImage(URL.createObjectURL(file));
-
+  
     // Convert file to Base64
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
       const base64Image = reader.result?.toString().split(",")[1]; // Remove base64 prefix
       setStatus("generating");
-
+  
       try {
-        // Send the image to Gemini API
-        const response = await axios.post<GeminiApiResponse>(
+        // Explicitly define the response type as an array
+        const response = await axios.post<{ imageSummary?: string } & Record<string, any>[]>(
           "http://localhost:3000/gemini",
           { image: base64Image },
           {
@@ -114,37 +115,35 @@ export function HomePage() {
             },
           }
         );
-        //console.log(base64Image)
-        console.log(response)
-        const geminiResponse = response.data.text || "No response from Gemini";
-        console.log(geminiResponse)
+  
+        console.log(response);
+  
+        // Extract imageSummary safely
+        const geminiResponse = response.data[0]?.imageSummary || "No response from Gemini";
+  
+        console.log(geminiResponse);
         setDisplayResponse(geminiResponse);
         setStatus("complete");
+  
+        // Save full response for navigation
+        setNgos(response.data.slice(1)); // Exclude the first object which is the `imageSummary`
       } catch (error) {
-        console.log(error)
         console.error("Error processing image with Gemini:", error);
         setDisplayResponse("Failed to analyze image.");
         setStatus("complete");
       }
     };
   };
-
-  // Animate dots during analysis
-  useEffect(() => {
-    if (status === "generating") {
-      const timer = setInterval(() => {
-        setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
-      }, 500);
-      return () => clearInterval(timer);
-    }
-  }, [status]);
-
-  // Redirect to the result view when complete (state excludes darkMode)
+  
+  // Redirect to the result view when complete
   useEffect(() => {
     if (status === "complete") {
-      navigate("/result", { state: { uploadedImage, displayResponse, ngos } });
+      navigate("/result", {
+        state: { uploadedImage, displayResponse, ngos }, // Now sending full API response
+      });
     }
   }, [status, navigate, uploadedImage, displayResponse, ngos]);
+  
 
   // Auto-play: scroll the carousel content every 3 seconds.
   useEffect(() => {
