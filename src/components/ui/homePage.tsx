@@ -53,11 +53,6 @@ export function HomePage() {
     "https://cdn.sanity.io/images/fa9ovwqs/production/96c657abedc8ecc492614904206fe59d46e1b72f-2542x2487.jpg?w=800&h=783&fit=crop",
   ];
 
-  interface GeminiApiResponse {
-    text?: string;
-    error?: string;
-  }
-
   useEffect(() => {
     const timer = setTimeout(() => {
       if ("geolocation" in navigator) {

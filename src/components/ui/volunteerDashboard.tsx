@@ -98,23 +98,29 @@ const VolunteerDashboard = () => {
     setDescription(e.target.value);
   };
 
-  const handlePostRequest = () => {
-    // Add posting logic here, e.g. form submission
-    console.log(
-      "Posting request with images:",
-      uploadedImages,
-      "description:",
-      description,
-      "incidentLocation:",
-      incidentLocation,
-      "noticedAt:",
-      noticedAt,
-      "currentActions:",
-      currentActions
-    );
-    axios.post("http://localhost:3000/animalHelpPost").then((response) => {
-      console.log(response);
-    })
+  const handlePostRequest = async () => {
+    try {
+      const requestData = {
+        images: uploadedImages,        
+        description,                   
+        incidentLocation,              
+        noticedAt,                     
+        currentActions,                
+        volunteerId: "some-volunteer-id", // Replace with actual volunteer ID
+      };
+  
+      console.log("Sending request with data:", requestData);
+  
+      const response = await axios.post("http://localhost:3000/animalHelpPost", requestData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      console.log("Response:", response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // When a user clicks on the map (outside of search or geolocation), update the location.
