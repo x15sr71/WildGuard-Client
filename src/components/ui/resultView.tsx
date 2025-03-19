@@ -68,6 +68,15 @@ export function ResultView() {
         <h3 className={`text-2xl font-semibold tracking-wide pb-2 border-b-2 ${darkMode ? "text-white border-blue-500" : "text-gray-900 border-blue-500"}`}>
           Nearby Organizations
         </h3>
+
+        {/* "Post Help Needed" Button */}
+        <Button
+          className="bg-red-500 hover:bg-red-600 text-white font-medium text-sm rounded-lg px-4 py-2 transition hover:scale-105 active:scale-95"
+          onClick={() => navigate("/volunteer-login")}
+        >
+          Need Help? Get in touch with nearby Volunteers
+        </Button>
+
         {ngos && ngos.length > 0 ? (
           ngos.map((ngo: any, index: number) => (
             <div
