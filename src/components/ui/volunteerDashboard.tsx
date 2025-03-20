@@ -1,35 +1,19 @@
 // VolunteerDashboard.tsx
-import { useState, useEffect, useRef, ChangeEvent } from "react";
-import { Button } from "./button";
-import { Card } from "./card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
-import { Separator } from "./separator";
+import React, { useState, useRef, ChangeEvent } from "react";
+import Sidebar from "./Sidebar";
+import Navbar from "./Navbar";
+import HomeSection from "./HomeSection";
+import DashboardSection from "./Dashboard";
 import axios from "axios";
-import {
-  Bell,
-  MapPin,
-  Bandage,
-  PawPrint,
-  BarChart,
-  User,
-  Sun,
-  Moon,
-  Calendar,
-  Map,
-  Home
-} from "lucide-react";
-import MapPicker from "./mapPicker"; // Import the new MapPicker component
+import {PostsFeed} from "./AnimalHelpPosts";
 
-const VolunteerDashboard = () => {
-  const [selectedView, setSelectedView] = useState("home"); // "home" or "dashboard"
+const VolunteerDashboard: React.FC = () => {
+  const [selectedView, setSelectedView] = useState("home");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [hasNotifications] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
-  const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // New states for image uploads and additional fields
+  // Image upload and form states
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [incidentLocation, setIncidentLocation] = useState("");
@@ -37,19 +21,60 @@ const VolunteerDashboard = () => {
   const [currentActions, setCurrentActions] = useState("");
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // New state for showing/hiding the map picker
+  const posts = [
+    {
+      id: 1,
+      images: [
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600&text=Image+2",
+        "/placeholder.svg?height=400&width=600&text=Image+3",
+      ],
+      status: "URGENT: Lost dog in Central Park area. Small brown terrier with a red collar.",
+      organization: {
+        name: "Animal Rescue NYC",
+        avatar: "/placeholder.svg?height=40&width=40",
+        initials: "AR",
+      },
+      timestamp: "3 hours ago",
+      likes: 24,
+      comments: 7,
+      shares: 12,
+    },
+    {
+      id: 2,
+      images: [
+        "/placeholder.svg?height=400&width=600&text=Found+Cat",
+        "/placeholder.svg?height=400&width=600&text=Close+Up",
+      ],
+      status: "FOUND: Gray tabby cat near Brooklyn Bridge. No collar, very friendly.",
+      organization: {
+        name: "Brooklyn Pet Finders",
+        avatar: "/placeholder.svg?height=40&width=40",
+        initials: "BP",
+      },
+      timestamp: "Yesterday at 2:15 PM",
+      likes: 42,
+      comments: 15,
+      shares: 8,
+    },
+    {
+      id: 3,
+      images: ["/placeholder.svg?height=400&width=600&text=Adoption+Day"],
+      status: "ADOPTION EVENT: This Saturday at Central Park. Many dogs and cats looking for forever homes!",
+      organization: {
+        name: "Forever Homes",
+        avatar: "/placeholder.svg?height=40&width=40",
+        initials: "FH",
+      },
+      timestamp: "2 days ago",
+      likes: 89,
+      comments: 23,
+      shares: 45,
+    },
+  ]
+
+  // MapPicker state
   const [showMapPicker, setShowMapPicker] = useState(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const notifications = [
     {
@@ -57,15 +82,15 @@ const VolunteerDashboard = () => {
       title: "Urgent Care Needed",
       message: "Orphaned panda cub requires feeding assistance",
       location: "23.8141° N, 90.4125° E",
-      read: false
+      read: false,
     },
     {
       id: 2,
       title: "Rescue Mission",
       message: "Injured spotted deer reported in urban area",
       location: "23.7945° N, 90.4143° E",
-      read: true
-    }
+      read: true,
+    },
   ];
 
   const rescueRequests = [
@@ -73,24 +98,26 @@ const VolunteerDashboard = () => {
       id: 1,
       title: "Injured Fox",
       description: "A fox was found injured near the woods. Immediate attention needed.",
-      location: "45.4215° N, 75.6972° W"
+      location: "45.4215° N, 75.6972° W",
     },
     {
       id: 2,
       title: "Stranded Turtle",
       description: "Turtle spotted on the road. Assistance required for safe relocation.",
-      location: "34.0522° N, 118.2437° W"
-    }
+      location: "34.0522° N, 118.2437° W",
+    },
   ];
 
-  const unreadNotifications = notifications.filter(n => !n.read).length;
+  // Sample data for Animal Help Posts
 
-  // Handler for image file selection (appending new images)
+
+  const unreadNotifications = notifications.filter((n) => !n.read).length;
+
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      const urls = files.map(file => URL.createObjectURL(file));
-      setUploadedImages(prev => [...prev, ...urls]);
+      const urls = files.map((file) => URL.createObjectURL(file));
+      setUploadedImages((prev) => [...prev, ...urls]);
     }
   };
 
@@ -101,404 +128,88 @@ const VolunteerDashboard = () => {
   const handlePostRequest = async () => {
     try {
       const requestData = {
-        images: uploadedImages,        
-        description,                   
-        incidentLocation,              
-        noticedAt,                     
-        currentActions,                
+        images: uploadedImages,
+        description,
+        incidentLocation,
+        noticedAt,
+        currentActions,
         volunteerId: "some-volunteer-id", // Replace with actual volunteer ID
       };
-  
+
       console.log("Sending request with data:", requestData);
-  
-      const response = await axios.post("http://localhost:3000/animalHelpPost", requestData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-  
+
+      const response = await axios.post(
+        "http://localhost:3000/animalHelpPost",
+        requestData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       console.log("Response:", response.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
-  // When a user clicks on the map (outside of search or geolocation), update the location.
   const handleMapClick = (event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
-      // Format location to 4 decimal places
       const locationString = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
       setIncidentLocation(locationString);
       setShowMapPicker(false);
     }
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
+
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       <div className="flex">
-        {/* Sidebar */}
-        <div className={`w-64 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg p-4 fixed h-full z-50`}>
-          <div className="flex items-center gap-3 mb-8">
-            <PawPrint className={`${darkMode ? 'text-white' : 'text-black'} w-8 h-8`} />
-            <h1 className="text-xl font-bold">
-              <span className={`${darkMode ? 'text-white' : 'text-black'}`}>Wild</span>
-              <span className="text-[#0F9D58]">Guard</span>
-            </h1>
-          </div>
-          <nav className="space-y-2">
-            <Button
-              variant="ghost"
-              className={`w-full justify-start gap-2 ${darkMode ? 'text-white hover:bg-gray-700' : 'text-gray-900 hover:bg-gray-100'}`}
-              onClick={() => setSelectedView("home")}
-            >
-              <Home size={18} />
-              Home / Help Needed
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setSelectedView("dashboard")}
-              className={`w-full justify-start gap-2 ${darkMode ? 'text-white hover:bg-gray-700' : 'text-gray-900 hover:bg-gray-100'}`}
-            >
-              <BarChart size={18} />
-              Dashboard
-            </Button>
-            <Button
-              variant="ghost"
-              className={`w-full justify-start gap-2 ${darkMode ? 'text-white hover:bg-gray-700' : 'text-gray-900 hover:bg-gray-100'}`}
-            >
-              <Bandage size={18} />
-              Active Missions
-            </Button>
-            <Button
-              variant="ghost"
-              className={`w-full justify-start gap-2 ${darkMode ? 'text-white hover:bg-gray-700' : 'text-gray-900 hover:bg-gray-100'}`}
-            >
-              <Calendar size={18} />
-              Schedule
-            </Button>
-            <Button
-              variant="ghost"
-              className={`w-full justify-start gap-2 ${darkMode ? 'text-white hover:bg-gray-700' : 'text-gray-900 hover:bg-gray-100'}`}
-            >
-              <Map size={18} />
-              Rescue Map
-            </Button>
-          </nav>
-        </div>
-
-        {/* Main Content */}
+        <Sidebar darkMode={darkMode} setSelectedView={setSelectedView} />
         <div className="ml-64 flex-1 p-8">
-          {/* Navbar */}
-          <header className="flex justify-between items-center mb-8">
-            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Welcome back, Sarah 🐾
-            </h1>
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={`${darkMode ? 'text-white' : 'text-gray-900'} relative`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowNotifications(!showNotifications);
-                  }}
-                >
-                  <Bell className="w-5 h-5" />
-                  {hasNotifications && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
-                  )}
-                </Button>
-
-                {showNotifications && (
-                  <div ref={notificationsRef} className="fixed right-4 top-20 z-50">
-                    <Card className={`w-80 shadow-xl ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-                      <div className="p-4">
-                        <div className="flex justify-between items-center mb-3">
-                          <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            Notifications ({unreadNotifications})
-                          </h3>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className={`${darkMode ? 'text-white' : 'text-gray-900'}`}
-                            onClick={() => {/* Add mark all read logic */ }}
-                          >
-                            Mark all read
-                          </Button>
-                        </div>
-                        <Separator className={`${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
-                        <div className="space-y-4 mt-4 max-h-96 overflow-y-auto">
-                          {notifications.map(notification => (
-                            <div
-                              key={notification.id}
-                              className={`p-3 rounded-lg cursor-pointer transition-colors ${!notification.read ? 'border-l-4 border-green-500' : ''} hover:bg-gray-100 dark:hover:bg-gray-700`}
-                              onClick={() => setSelectedLocation(notification.location)}
-                            >
-                              <div className="flex gap-3">
-                                <Bandage className="w-5 h-5 text-green-600" />
-                                <div className="flex-1">
-                                  <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    {notification.title}
-                                  </p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                                    {notification.message}
-                                  </p>
-                                  <div className="flex items-center gap-1 mt-1 text-sm text-green-600">
-                                    <MapPin className="w-4 h-4" />
-                                    <span>{notification.location}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                onClick={() => setDarkMode(!darkMode)}
-                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-              >
-                {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-800" />}
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className="focus:outline-none">
-                  <Avatar>
-                    <AvatarImage src="/user-avatar.jpg" />
-                    <AvatarFallback className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                      SA
-                    </AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} w-48 rounded-md shadow-lg`}
-                >
-                  <DropdownMenuItem className={`${darkMode ? 'hover:bg-gray-700 text-white border-b border-gray-700' : 'hover:bg-gray-100 text-gray-900 border-b border-gray-200'}`}>
-                    <User className="w-4 h-4 mr-2" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <Separator className={`${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
-                  <DropdownMenuItem className={`${darkMode ? 'text-red-400' : 'text-red-600'}`}>
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </header>
-
+          <Navbar
+            darkMode={darkMode}
+            toggleDarkMode={toggleDarkMode}
+            showNotifications={showNotifications}
+            setShowNotifications={setShowNotifications}
+            notifications={notifications}
+            unreadNotifications={unreadNotifications}
+            setSelectedLocation={setSelectedLocation}
+          />
           {selectedView === "home" && (
-            <section className="mb-8">
-              <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Need Help? Post Your Request
-              </h2>
-              <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Please add images related to your concern and describe the issue below.
-              </p>
-              <div className="mt-4 space-y-4">
-                <div
-                  className="flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-green-600 p-4 rounded cursor-pointer"
-                  onClick={() => imageInputRef.current?.click()}
-                >
-                  <div className="flex items-center gap-2">
-                    <PawPrint className={`${darkMode ? 'text-white' : 'text-black'} w-5 h-5`} />
-                    <span className={`${darkMode ? 'text-white' : 'text-black'}`}>Add Images</span>
-                  </div>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  hidden
-                  ref={imageInputRef}
-                  onChange={handleImageChange}
-                />
-                {uploadedImages.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {uploadedImages.map((imgUrl, index) => (
-                      <img
-                        key={index}
-                        src={imgUrl}
-                        alt={`Uploaded ${index}`}
-                        className="max-h-32 object-contain rounded shadow-sm"
-                      />
-                    ))}
-                  </div>
-                )}
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Incident Location Field */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">
-                      Incident Location
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Enter city and state..."
-                        value={incidentLocation}
-                        onChange={(e) => setIncidentLocation(e.target.value)}
-                        className={`w-full p-2 pl-10 border rounded focus:border-green-600 focus:ring-green-600 ${
-                          darkMode ? "bg-gray-700 text-white border-gray-600" : "bg-gray-100 text-gray-900 border-gray-300"
-                        }`}
-                      />
-                      <MapPin className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                      <button
-                        onClick={() => setShowMapPicker(true)}
-                        type="button"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-700"
-                      >
-                        <Map className="w-5 h-5" />
-                      </button>
-                    </div>
-                    {showMapPicker && (
-                      <MapPicker
-                        incidentLocation={incidentLocation}
-                        onMapClick={handleMapClick}
-                        onLocationSelect={(location) => setIncidentLocation(location)}
-                        darkMode={darkMode}
-                      />
-                    )}
-                  </div>
-                  {/* Noticed At Field */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">
-                      Noticed At
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={noticedAt}
-                      onChange={(e) => setNoticedAt(e.target.value)}
-                      className={`w-full p-2 border rounded focus:border-green-600 focus:ring-green-600 ${
-                        darkMode ? "bg-gray-700 text-white border-gray-600" : "bg-gray-100 text-gray-900 border-gray-300"
-                      }`}
-                    />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">
-                    Current Actions
-                  </label>
-                  <textarea
-                    placeholder="Describe what you are doing to help..."
-                    value={currentActions}
-                    onChange={(e) => setCurrentActions(e.target.value)}
-                    className={`w-full p-2 border rounded focus:border-green-600 focus:ring-green-600 ${
-                      darkMode ? "bg-gray-700 text-white border-gray-600" : "bg-gray-100 text-gray-900 border-gray-300"
-                    }`}
-                    rows={3}
-                  ></textarea>
-                </div>
-                <div className="mt-4">
-                  <textarea
-                    placeholder="Describe your concern here..."
-                    value={description}
-                    onChange={handleDescriptionChange}
-                    className={`w-full p-2 border rounded focus:border-green-600 focus:ring-green-600 ${
-                      darkMode ? "bg-gray-700 text-white border-gray-600" : "bg-gray-100 text-gray-900 border-gray-300"
-                    }`}
-                    rows={5}
-                  ></textarea>
-                </div>
-                <Button
-                  className="mt-2 bg-green-600 hover:bg-green-700 text-white rounded-full px-4 py-2"
-                  onClick={handlePostRequest}
-                >
-                  Post Request
-                </Button>
-              </div>
-            </section>
+            <HomeSection
+              darkMode={darkMode}
+              incidentLocation={incidentLocation}
+              setIncidentLocation={setIncidentLocation}
+              uploadedImages={uploadedImages}
+              handleImageChange={handleImageChange}
+              imageInputRef={imageInputRef as React.RefObject<HTMLInputElement>}
+              description={description}
+              handleDescriptionChange={handleDescriptionChange}
+              noticedAt={noticedAt}
+              setNoticedAt={setNoticedAt}
+              currentActions={currentActions}
+              setCurrentActions={setCurrentActions}
+              handlePostRequest={handlePostRequest}
+              showMapPicker={showMapPicker}
+              setShowMapPicker={setShowMapPicker}
+              handleMapClick={handleMapClick}
+            />
           )}
-
           {selectedView === "dashboard" && (
-            <>
-              {selectedLocation && (
-                <div className={`mb-6 p-4 rounded-lg ${darkMode ? 'bg-green-800 border border-green-700 text-green-200' : 'bg-green-100 border border-green-200 text-green-800'}`}>
-                  <p>
-                    Selected Location: <strong>{selectedLocation}</strong>
-                  </p>
-                </div>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Active Missions</p>
-                      <p className={`text-3xl font-bold mt-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>5</p>
-                    </div>
-                    <Bandage className="w-5 h-5 text-green-600" />
-                  </div>
-                </Card>
-                <Card className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Upcoming Shifts</p>
-                      <p className={`text-3xl font-bold mt-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>3</p>
-                    </div>
-                    <Calendar className="w-5 h-5 text-green-600" />
-                  </div>
-                </Card>
-                <Card className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Rescues This Month</p>
-                      <p className={`text-3xl font-bold mt-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>27</p>
-                    </div>
-                    <PawPrint className={`${darkMode ? 'text-white' : 'text-black'}`} size={24} />
-                  </div>
-                </Card>
-              </div>
-              <Card className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'} mb-8`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Rescue Operations Map
-                  </h3>
-                  <Button variant="ghost" className="text-green-600">
-                    <Map className="w-4 h-4 mr-2" />
-                    Refresh Location
-                  </Button>
-                </div>
-                <div className={`h-96 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg flex items-center justify-center`}>
-                  <Map className={`w-16 h-16 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                  <p className={`ml-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Map integration coming soon
-                  </p>
-                </div>
-              </Card>
-              <section className="mb-8">
-                <h2 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Recent Rescue Requests
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {rescueRequests.map((request) => (
-                    <Card
-                      key={request.id}
-                      className={`p-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}
-                    >
-                      <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {request.title}
-                      </h3>
-                      <p className={`mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {request.description}
-                      </p>
-                      <div className="mt-3 flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                        <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {request.location}
-                        </span>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            </>
+            <DashboardSection
+              darkMode={darkMode}
+              selectedLocation={selectedLocation}
+              rescueRequests={rescueRequests}
+            />
           )}
+           {selectedView === "animalHelpPosts" && <PostsFeed darkMode={darkMode} />}
         </div>
       </div>
     </div>
