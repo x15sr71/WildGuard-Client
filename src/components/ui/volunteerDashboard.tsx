@@ -21,58 +21,6 @@ const VolunteerDashboard: React.FC = () => {
   const [currentActions, setCurrentActions] = useState("");
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const posts = [
-    {
-      id: 1,
-      images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600&text=Image+2",
-        "/placeholder.svg?height=400&width=600&text=Image+3",
-      ],
-      status: "URGENT: Lost dog in Central Park area. Small brown terrier with a red collar.",
-      organization: {
-        name: "Animal Rescue NYC",
-        avatar: "/placeholder.svg?height=40&width=40",
-        initials: "AR",
-      },
-      timestamp: "3 hours ago",
-      likes: 24,
-      comments: 7,
-      shares: 12,
-    },
-    {
-      id: 2,
-      images: [
-        "/placeholder.svg?height=400&width=600&text=Found+Cat",
-        "/placeholder.svg?height=400&width=600&text=Close+Up",
-      ],
-      status: "FOUND: Gray tabby cat near Brooklyn Bridge. No collar, very friendly.",
-      organization: {
-        name: "Brooklyn Pet Finders",
-        avatar: "/placeholder.svg?height=40&width=40",
-        initials: "BP",
-      },
-      timestamp: "Yesterday at 2:15 PM",
-      likes: 42,
-      comments: 15,
-      shares: 8,
-    },
-    {
-      id: 3,
-      images: ["/placeholder.svg?height=400&width=600&text=Adoption+Day"],
-      status: "ADOPTION EVENT: This Saturday at Central Park. Many dogs and cats looking for forever homes!",
-      organization: {
-        name: "Forever Homes",
-        avatar: "/placeholder.svg?height=40&width=40",
-        initials: "FH",
-      },
-      timestamp: "2 days ago",
-      likes: 89,
-      comments: 23,
-      shares: 45,
-    },
-  ]
-
   // MapPicker state
   const [showMapPicker, setShowMapPicker] = useState(false);
 

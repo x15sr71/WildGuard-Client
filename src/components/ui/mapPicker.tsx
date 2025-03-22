@@ -10,7 +10,7 @@ const containerStyle = {
 };
 
 const defaultCenter = {
-  lat: 28.6139, // Default latitude (New Delhi, India)
+  lat: 28.6139, // Default latitude
   lng: 77.209,  // Default longitude
 };
 
@@ -19,7 +19,7 @@ const libraries: ("places")[] = ["places"];
 interface MapPickerProps {
   incidentLocation: string;
   onMapClick: (event: google.maps.MapMouseEvent) => void;
-  onLocationSelect: (location: string) => void;
+  onLocationSelect: (location: string, coordinates: { lat: number; lng: number }) => void;
   darkMode: boolean;
 }
 
@@ -29,7 +29,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
   onLocationSelect,
   darkMode 
 }) => {
-  const initialCenter = incidentLocation
+  const initialCenter = incidentLocation && incidentLocation.includes(",")
     ? {
         lat: parseFloat(incidentLocation.split(",")[0]),
         lng: parseFloat(incidentLocation.split(",")[1]),
@@ -37,7 +37,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
     : defaultCenter;
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [marker, setMarker] = useState<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
   const [mapCenter, setMapCenter] = useState(initialCenter);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
@@ -48,18 +48,14 @@ const MapPicker: React.FC<MapPickerProps> = ({
 
   useEffect(() => {
     if (!isLoaded || !map) return;
-
-    // Ensure the Google Maps API has loaded the marker module
-    if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
-      if (!marker) {
-        const newMarker = new google.maps.marker.AdvancedMarkerElement({
-          position: mapCenter,
-          map: map,
-        });
-        setMarker(newMarker);
-      } else {
-        marker.position = mapCenter;
-      }
+    if (!marker) {
+      const newMarker = new google.maps.Marker({
+        position: mapCenter,
+        map: map,
+      });
+      setMarker(newMarker);
+    } else {
+      marker.setPosition(mapCenter);
     }
   }, [isLoaded, map, marker, mapCenter]);
 
@@ -77,9 +73,9 @@ const MapPicker: React.FC<MapPickerProps> = ({
       if (place.geometry && place.geometry.location) {
         const lat = place.geometry.location.lat();
         const lng = place.geometry.location.lng();
-        const locationString = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        const locationString = place.formatted_address || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
         setMapCenter({ lat, lng });
-        onLocationSelect(locationString);
+        onLocationSelect(locationString, { lat, lng });
       }
     }
   };
@@ -92,7 +88,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
           const lng = position.coords.longitude;
           const locationString = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
           setMapCenter({ lat, lng });
-          onLocationSelect(locationString);
+          onLocationSelect(locationString, { lat, lng });
         },
         (error) => {
           console.error("Error retrieving location", error);
@@ -107,9 +103,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
   if (!isLoaded) return <div>Loading Map...</div>;
 
   return (
-    <div className={`mt-2 shadow-lg rounded border ${
-      darkMode ? "border-gray-600" : "border-[#0F9D58]"
-    } overflow-hidden`}>
+    <div className={`mt-2 shadow-lg rounded border ${darkMode ? "border-gray-600" : "border-[#0F9D58]"} overflow-hidden`}>
       <div className="p-2 flex gap-2">
         <Autocomplete onLoad={onLoadAutocomplete} onPlaceChanged={onPlaceChanged}>
           <input 
@@ -118,7 +112,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
             className={`p-2 border rounded w-full focus:outline-none focus:ring-2 ${
               darkMode 
                 ? "bg-gray-700 border-gray-500 text-white placeholder-gray-400 focus:ring-green-500" 
-                : "bg-white border-[#0F9D58] text-gray-900 placeholder-gray-500 focus:ring-[#0F9D58]"
+                : "bg-white border-[#0F9D58] !text-[#000000] placeholder-gray-500 focus:ring-[#0F9D58]"
             }`}
           />
         </Autocomplete>
@@ -140,14 +134,16 @@ const MapPicker: React.FC<MapPickerProps> = ({
         onClick={onMapClick}
         onLoad={onLoadMap}
         options={{
-          styles: darkMode ? [
-            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-          ] : [],
+          styles: darkMode
+            ? [
+                { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+                { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+                { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+              ]
+            : [],
           streetViewControl: false,
           mapTypeControl: false,
-          fullscreenControl: false
+          fullscreenControl: false,
         }}
       />
     </div>
