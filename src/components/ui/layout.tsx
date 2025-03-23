@@ -10,7 +10,7 @@ export function Layout() {
   const [darkMode, setDarkMode] = useState(true);
 
   // Define paths where the navbar should be hidden
-  const hideNavPaths = ["/volunteer-login", "/volunteer-dashboard"];
+  const hideNavPaths = ["/volunteer-login", "/volunteer-dashboard", "/signup", "/complete-profile"];
 
   return (
     <div
