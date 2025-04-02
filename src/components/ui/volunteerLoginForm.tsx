@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; // or your preferred routing solution
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import {
 import { auth } from "../../firebase/firebaseInitialize"; // adjust path based on your project structure
 
 // Helper function to call your backend /auth/login endpoint
-async function callBackendLogin(idToken: any) {
+async function callBackendLogin(idToken: string) {
   try {
     const response = await fetch("http://localhost:3000/auth/login", {
       method: "POST",
@@ -49,7 +49,7 @@ export function VolunteerLoginForm() {
   const navigate = useNavigate();
 
   // Handle email/password login
-  const handleEmailLogin = async (e: any) => {
+  const handleEmailLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg("");
     try {
@@ -59,16 +59,25 @@ export function VolunteerLoginForm() {
         email,
         password
       );
-      console.log("User logged in with email:", userCredential.user);
+      const user = userCredential.user;
+      console.log("User logged in with email:", user);
 
       // Get Firebase ID token
-      const idToken = await userCredential.user.getIdToken();
+      const idToken = await user.getIdToken();
+
+      // Store the Firebase UID in localStorage for future requests
+      if (typeof window !== "undefined") {
+        localStorage.setItem("firebaseId", user.uid);
+        localStorage.setItem("firebaseIdToken", idToken);
+        console.log("Stored Firebase UID:", localStorage.getItem("firebaseId"));
+      }
+
       // Call backend /auth/login endpoint to verify token and store user info
       const backendResponse = await callBackendLogin(idToken);
       console.log("Backend login success:", backendResponse);
 
       // Redirect after successful login and backend processing
-      navigate("/dashboard");
+      navigate("/volunteer-dashboard");
     } catch (error) {
       console.error("Email login error:", error);
       setErrorMsg("Invalid email or password");
@@ -82,21 +91,41 @@ export function VolunteerLoginForm() {
     try {
       // Sign in via Firebase with Google popup
       const result = await signInWithPopup(auth, provider);
-      console.log("User logged in with Google:", result.user);
+      const user = result.user;
+      console.log("User logged in with Google:", user);
 
       // Get Firebase ID token
-      const idToken = await result.user.getIdToken();
-      // Call backend /auth/login endpoint to verify token and store user info
+      const idToken = await user.getIdToken();
+
+      // Store the Firebase UID in localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("firebaseId", user.uid);
+        localStorage.setItem("firebaseIdToken", idToken);
+        console.log("Stored Firebase UID:", localStorage.getItem("firebaseId"));
+      }
+
+      // Call backend /auth/login endpoint
       const backendResponse = await callBackendLogin(idToken);
       console.log("Backend login success:", backendResponse);
 
-      // Redirect after successful login and backend processing
-      navigate("/dashboard");
+      // Check if user has completed their profile
+      const profileResponse = await fetch(`http://localhost:3000/volunteer/profile`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+
+      if (!profileResponse.ok) {
+        // If the profile does not exist, redirect to complete profile page
+        navigate("/complete-profile");
+      } else {
+        // Profile exists, redirect to dashboard
+        navigate("/volunteer-dashboard");
+      }
     } catch (error) {
       console.error("Google login error:", error);
       setErrorMsg("Google login failed. Please try again.");
     }
-  };
+  }; 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -108,6 +137,9 @@ export function VolunteerLoginForm() {
           <CardTitle className="text-2xl text-center font-bold text-[#2D2D2D]">
             Volunteer Login
           </CardTitle>
+          <CardDescription className="text-center text-gray-700 mb-2">
+  Login or sign up to get in touch with nearby volunteers.
+</CardDescription>
           <CardDescription className="text-center text-gray-600">
             Continue your wildlife conservation journey
           </CardDescription>
@@ -123,10 +155,11 @@ export function VolunteerLoginForm() {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                className="rounded-full border-green-500 focus:ring-green-500"
+                className="rounded-full border-gray-300 focus:ring-green-500 text-black placeholder-gray-500 px-4 py-2"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+
             </div>
 
             <div className="space-y-2">
@@ -137,7 +170,7 @@ export function VolunteerLoginForm() {
                 id="password"
                 type="password"
                 placeholder="Enter your password"
-                className="rounded-full border-green-500 focus:ring-green-500"
+                className="rounded-full border-gray-300 focus:ring-green-500 text-black placeholder-gray-500 px-4 py-2"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />

@@ -1,7 +1,6 @@
-// Sidebar.tsx
 import React from "react";
 import { Button } from "./button";
-import { Home, BarChart, Bandage, Calendar, Map, PawPrint, Image } from "lucide-react";
+import { Home, BarChart, Ban as Bandage, Calendar, Map, PawPrint, Leaf, TreePine } from "lucide-react";
 
 type SidebarProps = {
   darkMode: boolean;
@@ -10,77 +9,62 @@ type SidebarProps = {
 
 const Sidebar: React.FC<SidebarProps> = ({ darkMode, setSelectedView }) => {
   return (
-    <div className={`w-64 ${darkMode ? "bg-gray-800" : "bg-white"} shadow-lg p-4 fixed h-full z-50`}>
-      <div className="flex items-center gap-3 mb-8">
-        <PawPrint className={`${darkMode ? 'text-white' : 'text-black'} w-8 h-8`} />
-        <h1 className="text-xl font-bold">
-          <span className={`${darkMode ? "text-white" : "text-black"}`}>Wild</span>
-          <span className="text-[#0F9D58]">Guard</span>
-        </h1>
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      <div className={`w-56 flex-shrink-0 h-full flex flex-col ${darkMode ? 'bg-[#0F9D58]' : 'bg-green-100'} border-r ${darkMode ? 'border-green-600' : 'border-green-200'} transition-all duration-300 shadow-lg`}>
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-6">
+            <TreePine className={`w-6 h-6 ${darkMode ? 'text-white' : 'text-green-700'} transition-colors`} />
+            <div>
+              <h1 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-green-900'}`}>Wild</h1>
+              <h2 className={`text-xs ${darkMode ? 'text-green-100' : 'text-green-700'}`}>Guard</h2>
+            </div>
+          </div>
+
+          <nav className="space-y-1">
+            {[
+              { view: "home", icon: Home, label: "Home / Help Needed" },
+              { view: "animalHelpPosts", icon: PawPrint, label: "Animal Help Posts" },
+              { view: "dashboard", icon: BarChart, label: "Dashboard" },
+              { view: "missions", icon: Bandage, label: "Active Missions" },
+              { view: "schedule", icon: Calendar, label: "Schedule" },
+              { view: "map", icon: Map, label: "Rescue Map" },
+            ].map((item) => (
+              <Button
+                key={item.view}
+                className={`w-full justify-start gap-2 px-3 ${
+                  darkMode 
+                    ? 'hover:bg-[#1DB86B] text-white hover:text-white' 
+                    : 'hover:bg-green-200 text-green-800'
+                } transition-all duration-200 text-sm`}
+                variant="ghost"
+                onClick={() => setSelectedView(item.view)}
+              >
+                <item.icon className={`w-4 h-4 ${darkMode ? 'text-green-100' : 'text-green-700'}`} />
+                <span className="truncate">{item.label}</span>
+              </Button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="mt-auto p-3">
+          <div className={`rounded-lg p-3 ${darkMode ? 'bg-[#0A8048]' : 'bg-green-200'} transition-colors duration-300 shadow-md`}>
+            <div className="flex items-center gap-2 mb-2">
+              <Leaf className={`w-4 h-4 ${darkMode ? 'text-green-200' : 'text-green-700'}`} />
+              <span className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-green-900'}`}>Impact Stats</span>
+            </div>
+            <div className={`text-xs ${darkMode ? 'text-green-50' : 'text-green-800'}`}>
+              <p className="truncate">Animals Rescued: 1,234</p>
+              <p className="truncate">Active Volunteers: 89</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <nav className="space-y-2">
-        <Button
-          variant="ghost"
-          className={`w-full justify-start gap-2 ${
-            darkMode ? "text-white hover:bg-gray-700" : "text-gray-900 hover:bg-gray-100"
-          }`}
-          onClick={() => setSelectedView("home")}
-        >
-          <Home size={18} />
-          Home / Help Needed
-        </Button>
-        
 
-        <Button
-          variant="ghost"
-          className={`w-full justify-start gap-2 ${
-            darkMode ? "text-white hover:bg-gray-700" : "text-gray-900 hover:bg-gray-100"
-          }`}
-          onClick={() => setSelectedView("animalHelpPosts")}
-        >
-          <Image size={18} />
-          Animal Help Posts
-        </Button>
-
-
-        <Button
-          variant="ghost"
-          className={`w-full justify-start gap-2 ${
-            darkMode ? "text-white hover:bg-gray-700" : "text-gray-900 hover:bg-gray-100"
-          }`}
-          onClick={() => setSelectedView("dashboard")}
-        >
-          <BarChart size={18} />
-          Dashboard
-        </Button>
-        <Button
-          variant="ghost"
-          className={`w-full justify-start gap-2 ${
-            darkMode ? "text-white hover:bg-gray-700" : "text-gray-900 hover:bg-gray-100"
-          }`}
-        >
-          <Bandage size={18} />
-          Active Missions
-        </Button>
-        <Button
-          variant="ghost"
-          className={`w-full justify-start gap-2 ${
-            darkMode ? "text-white hover:bg-gray-700" : "text-gray-900 hover:bg-gray-100"
-          }`}
-        >
-          <Calendar size={18} />
-          Schedule
-        </Button>
-        <Button
-          variant="ghost"
-          className={`w-full justify-start gap-2 ${
-            darkMode ? "text-white hover:bg-gray-700" : "text-gray-900 hover:bg-gray-100"
-          }`}
-        >
-          <Map size={18} />
-          Rescue Map
-        </Button>
-      </nav>
+      {/* Main Content Area */}
+      <div className="flex-grow p-4">
+        {/* Your home section or main content goes here */}
+      </div>
     </div>
   );
 };

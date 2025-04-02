@@ -8,9 +8,25 @@ export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [darkMode, setDarkMode] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Define paths where the navbar should be hidden
   const hideNavPaths = ["/volunteer-login", "/volunteer-dashboard", "/signup", "/complete-profile"];
+
+  // Handle search submission
+  const handleSearch = () => {
+    // You can implement your search logic here
+    // For example, send the searchQuery to your backend API
+    console.log("Searching for:", searchQuery);
+    // navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
+  };
+
+  // Handle key press for search input
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <div
@@ -43,11 +59,14 @@ export function Layout() {
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#0F9D58] w-5 h-5" />
             <Input
               placeholder="Search NGOs or locations..."
-              className={`w-full pl-12 pr-4 py-2 rounded-full border-2 ${
+              className={`w-full pl-12 py-2 rounded-full border border-[#0F9D58] focus:outline-none focus:ring-1 focus:ring-[#0F9D58] ${
                 darkMode
-                  ? "bg-gray-700 border-[#0F9D58] text-white placeholder-gray-400"
-                  : "border-[#0F9D58]"
+                  ? "bg-gray-700 text-white placeholder-gray-400"
+                  : "bg-white"
               }`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
             />
           </div>
 
@@ -80,7 +99,7 @@ export function Layout() {
 
       {/* Main Content */}
       <main className={hideNavPaths.includes(location.pathname) ? "" : "pt-20 flex-1"}>
-        <Outlet context={{ darkMode }} />
+        <Outlet context={{ darkMode, searchQuery }} />
       </main>
 
       {/* Footer */}

@@ -7,6 +7,7 @@ import { VolunteerLoginForm } from "./components/ui/volunteerLoginForm";
 import VolunteerDashboard from "./components/ui/volunteerDashboard";
 import { VolunteerSignupForm } from "./components/ui/signup";
 import { VolunteerCompleteProfilePage } from "./components/ui/completeYourProfile";
+import { ProtectedRoute } from "./components/protectedRoutes";
 
 function App() {
   return (
@@ -17,7 +18,9 @@ function App() {
           <Route path="/result" element={<ResultView />} />
           <Route path="/volunteer-login" element={<VolunteerLoginForm />} />
           <Route path="/complete-profile" element={<VolunteerCompleteProfilePage />} />
+          <Route element={<ProtectedRoute />}>
           <Route path="/volunteer-dashboard" element={<VolunteerDashboard/>} />
+          </Route>
           <Route path="/signup" element={<VolunteerSignupForm/>} />
         </Route>
       </Routes>

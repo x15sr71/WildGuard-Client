@@ -2,7 +2,7 @@
 import React, { useState, useRef, ChangeEvent } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
-import HomeSection from "./HomeSection";
+import PostRequest from "./postRequestPage";
 import DashboardSection from "./Dashboard";
 import axios from "axios";
 import {PostsFeed} from "./AnimalHelpPosts";
@@ -11,7 +11,7 @@ const VolunteerDashboard: React.FC = () => {
   const [selectedView, setSelectedView] = useState("home");
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   // Image upload and form states
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -23,7 +23,7 @@ const VolunteerDashboard: React.FC = () => {
 
   // MapPicker state
   const [showMapPicker, setShowMapPicker] = useState(false);
-
+  
   const notifications = [
     {
       id: 1,
@@ -131,7 +131,7 @@ const VolunteerDashboard: React.FC = () => {
             setSelectedLocation={setSelectedLocation}
           />
           {selectedView === "home" && (
-            <HomeSection
+            <PostRequest
               darkMode={darkMode}
               incidentLocation={incidentLocation}
               setIncidentLocation={setIncidentLocation}

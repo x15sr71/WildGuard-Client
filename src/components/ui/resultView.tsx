@@ -10,7 +10,16 @@ export function ResultView() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [visibleText, setVisibleText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, [currentPage]);
+  
   if (!state) {
     return (
       <div className="p-6 text-center">
@@ -40,6 +49,25 @@ export function ResultView() {
       return () => clearInterval(interval);
     }
   }, [displayResponse]);
+
+  // Paginate the NGOs list
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentNgos = ngos.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(ngos.length / itemsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   return (
     <div className={`w-full flex flex-col md:flex-row p-6 gap-6 ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
@@ -77,8 +105,8 @@ export function ResultView() {
           Need Help? Get in touch with nearby Volunteers
         </Button>
 
-        {ngos && ngos.length > 0 ? (
-          ngos.map((ngo: any, index: number) => (
+        {currentNgos && currentNgos.length > 0 ? (
+          currentNgos.map((ngo: any, index: number) => (
             <div
               key={index}
               className={`p-6 rounded-lg shadow-md transition-colors ${
@@ -167,7 +195,26 @@ export function ResultView() {
         ) : (
           <p className="text-gray-500">No nearby NGOs found.</p>
         )}
+
+        {/* Pagination Controls */}
+        <div className="mt-6 flex justify-between">
+          <Button
+            className="bg-gray-500 hover:bg-gray-600 text-white"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            className="bg-gray-500 hover:bg-gray-600 text-white"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );
 }
+

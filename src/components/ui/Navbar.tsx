@@ -1,5 +1,4 @@
-// Navbar.tsx
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Button } from "./button";
 import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 import {
@@ -12,6 +11,7 @@ import { Separator } from "./separator";
 import { Bell, Sun, Moon, User } from "lucide-react";
 import { Card } from "./card";
 import { Bandage, MapPin } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 type Notification = {
   id: number;
@@ -44,7 +44,10 @@ const Navbar: React.FC<NavbarProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target as Node)
+      ) {
         setShowNotifications(false);
       }
     };
@@ -53,10 +56,28 @@ const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowNotifications]);
 
+  const { user } = useAuth();
+  const photoURL = user?.photoURL;
+
+  // Use local state to control the avatar source.
+  const fallbackURL = "https://github.com/shadcn.png";
+  const [avatarSrc, setAvatarSrc] = useState<string>(photoURL || fallbackURL);
+
+  // If the photoURL changes, update the local avatar source.
+  useEffect(() => {
+    setAvatarSrc(photoURL || fallbackURL);
+  }, [photoURL]);
+
+  console.log("User photoURL:", photoURL);
+
   return (
     <header className="flex justify-between items-center mb-8">
-      <h1 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
-        Welcome back, Sarah 🐾
+      <h1
+        className={`text-2xl font-bold ${
+          darkMode ? "text-white" : "text-gray-900"
+        }`}
+      >
+        Welcome back, {user?.displayName ? user.displayName : ""} 🐾
       </h1>
       <div className="flex items-center gap-4">
         <div className="relative">
@@ -78,12 +99,18 @@ const Navbar: React.FC<NavbarProps> = ({
             <div ref={notificationsRef} className="fixed right-4 top-20 z-50">
               <Card
                 className={`w-80 shadow-xl ${
-                  darkMode ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"
+                  darkMode
+                    ? "bg-gray-800 border border-gray-700"
+                    : "bg-white border border-gray-200"
                 }`}
               >
                 <div className="p-4">
                   <div className="flex justify-between items-center mb-3">
-                    <h3 className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
+                    <h3
+                      className={`font-semibold ${
+                        darkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
                       Notifications ({unreadNotifications})
                     </h3>
                     <Button
@@ -97,36 +124,43 @@ const Navbar: React.FC<NavbarProps> = ({
                       Mark all read
                     </Button>
                   </div>
-                  <Separator className={`${darkMode ? "bg-gray-700" : "bg-gray-200"}`} />
+                  <Separator
+                    className={`${darkMode ? "bg-gray-700" : "bg-gray-200"}`}
+                  />
                   <div className="space-y-4 mt-4 max-h-96 overflow-y-auto">
-                  {notifications.map((notification) => (
-  <div
-    key={notification.id}
-    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-      !notification.read ? "border-l-4 border-green-500" : ""
-    } hover:bg-gray-100 dark:hover:bg-gray-700`}
-    onClick={() => setSelectedLocation(notification.location)}
-  >
-    <div className="flex gap-3">
-      {/* Use the Bandage icon for the notification */}
-      <Bandage className="w-5 h-5 text-green-600" />
-      <div className="flex-1">
-        <p className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>
-          {notification.title}
-        </p>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          {notification.message}
-        </p>
-        <div className="flex items-center gap-1 mt-1 text-sm text-green-600">
-          {/* Use the MapPin icon for location */}
-          <MapPin className="w-4 h-4" />
-          <span>{notification.location}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-))}
-
+                    {notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                          !notification.read
+                            ? "border-l-4 border-green-500"
+                            : ""
+                        } hover:bg-gray-100 dark:hover:bg-gray-700`}
+                        onClick={() =>
+                          setSelectedLocation(notification.location)
+                        }
+                      >
+                        <div className="flex gap-3">
+                          <Bandage className="w-5 h-5 text-green-600" />
+                          <div className="flex-1">
+                            <p
+                              className={`font-medium ${
+                                darkMode ? "text-white" : "text-gray-900"
+                              }`}
+                            >
+                              {notification.title}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                              {notification.message}
+                            </p>
+                            <div className="flex items-center gap-1 mt-1 text-sm text-green-600">
+                              <MapPin className="w-4 h-4" />
+                              <span>{notification.location}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </Card>
@@ -137,33 +171,53 @@ const Navbar: React.FC<NavbarProps> = ({
           onClick={toggleDarkMode}
           className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
         >
-          {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-800" />}
+          {darkMode ? (
+            <Sun className="w-5 h-5 text-yellow-500" />
+          ) : (
+            <Moon className="w-5 h-5 text-gray-800" />
+          )}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">
-            <Avatar>
-              <AvatarImage src="/user-avatar.jpg" />
-              <AvatarFallback className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                SA
+            <Avatar className="w-10 h-10 border border-gray-300">
+              <AvatarImage
+                src={avatarSrc}
+                alt="User Avatar"
+                onError={(e) => {
+                  console.error("Avatar image failed to load:", e);
+                  setAvatarSrc(fallbackURL);
+                }}
+              />
+              <AvatarFallback>
+                {user?.displayName?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent
             align="end"
             className={`${
-              darkMode ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"
+              darkMode
+                ? "bg-gray-800 border border-gray-700"
+                : "bg-white border border-gray-200"
             } w-48 rounded-md shadow-lg`}
           >
             <DropdownMenuItem
               className={`${
-                darkMode ? "hover:bg-gray-700 text-white border-b border-gray-700" : "hover:bg-gray-100 text-gray-900 border-b border-gray-200"
+                darkMode
+                  ? "hover:bg-gray-700 text-white border-b border-gray-700"
+                  : "hover:bg-gray-100 text-gray-900 border-b border-gray-200"
               }`}
             >
               <User className="w-4 h-4 mr-2" />
               <span>Profile</span>
             </DropdownMenuItem>
-            <Separator className={`${darkMode ? "bg-gray-700" : "bg-gray-200"}`} />
-            <DropdownMenuItem className={`${darkMode ? "text-red-400" : "text-red-600"}`}>
+            <Separator
+              className={`${darkMode ? "bg-gray-700" : "bg-gray-200"}`}
+            />
+            <DropdownMenuItem
+              className={`${darkMode ? "text-red-400" : "text-red-600"}`}
+            >
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>

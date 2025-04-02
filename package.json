@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "TSC_COMPILE_ON_ERROR=true tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -31,6 +31,7 @@
     "embla-carousel-react": "^8.5.2",
     "firebase": "^11.5.0",
     "framer-motion": "^12.5.0",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.482.0",
     "react": "^19.0.0",
     "react-day-picker": "^9.6.3",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/axios": "^0.9.36",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",

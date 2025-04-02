@@ -1,5 +1,4 @@
-// VolunteerSignupForm.jsx
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +12,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { PawPrint } from "lucide-react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../firebase/firebaseInitialize"; // adjust path based on your project structure
+import { auth } from "../../firebase/firebaseInitialize"; // Adjust path
 
 // Helper function to call your backend /auth/login endpoint
-async function callBackendSignup(idToken: any) {
+async function callBackendSignup(idToken: string) {
   try {
     const response = await fetch("http://localhost:3000/auth/login", {
       method: "POST",
@@ -46,44 +45,55 @@ export function VolunteerSignupForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
-  const handleSignup = async (e: any) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg("");
-    
+    console.log("handleSignup called");
+  
     if (password !== confirmPassword) {
       setErrorMsg("Passwords do not match");
       return;
     }
-
+  
     try {
       // Create a new user with Firebase
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("User created via Firebase:", user);
-
+  
       // Update the user's display name (if provided)
       if (name) {
         await updateProfile(user, { displayName: name });
       }
-
+  
       // Retrieve the Firebase ID token (JWT)
-      const idToken = await user.getIdToken();
-      
+      const idToken = await user.getIdToken(true);
+      console.log("Firebase ID Token:", idToken);
+  
+      // Store the Firebase ID token in localStorage after a short delay
+      if (typeof window !== "undefined" && idToken) {
+        setTimeout(() => {
+          localStorage.setItem("firebaseIdToken", idToken);
+          localStorage.setItem("firebaseId", user.uid);
+          console.log("Stored token:", localStorage.getItem("firebaseIdToken"));
+          console.log("Stored Firebase ID:", localStorage.getItem("firebaseId"));
+        }, 100);
+      } else {
+        console.error("localStorage is unavailable or idToken is null.");
+      }
+  
       // Call backend /auth/login endpoint to verify token and store basic user info
       const backendResponse = await callBackendSignup(idToken);
       console.log("Backend signup success:", backendResponse);
-
-      // Redirect to complete profile page (do not redirect to dashboard yet)
+  
+      // Redirect to complete profile page
       navigate("/complete-profile");
     } catch (error) {
       console.error("Signup error:", error);
       setErrorMsg("Signup failed. Please try again.");
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
