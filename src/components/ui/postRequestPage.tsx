@@ -90,6 +90,8 @@ const PostRequest: React.FC<PostRequestProps> = ({
     setIncidentLocation(newLocation);
     setLocationQuery(newLocation);
   };
+  
+  const validNoticedAt = noticedAt ? new Date(noticedAt).toISOString() : new Date().toISOString();
 
   const handlePostRequest = async (payload: any) => {
     try {
@@ -116,7 +118,7 @@ const PostRequest: React.FC<PostRequestProps> = ({
           : null,
       },
       uploadedImages,
-      noticedAt,
+      validNoticedAt,
       currentActions,
       description,
       animalType,
