@@ -93,7 +93,7 @@ const PostRequest: React.FC<PostRequestProps> = ({
 
   const handlePostRequest = async (payload: any) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/post-request", payload);
+      const response = await axios.post("https://wildgaurd-backend-642935703539.asia-south1.run.app/api/post-request", payload);
       console.log("Post successful:", response.data);
       setPostSuccess(true);
       setPostData(response.data);

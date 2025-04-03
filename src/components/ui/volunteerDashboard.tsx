@@ -87,7 +87,7 @@ const VolunteerDashboard: React.FC = () => {
       console.log("Sending request with data:", requestData);
 
       const response = await axios.post(
-        "http://localhost:3000/animalHelpPost",
+        "https://wildgaurd-backend-642935703539.asia-south1.run.app/animalHelpPost",
         requestData,
         {
           headers: {
