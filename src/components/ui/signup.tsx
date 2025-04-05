@@ -17,7 +17,7 @@ import { auth } from "../../firebase/firebaseInitialize"; // Adjust path
 // Helper function to call your backend /auth/login endpoint
 async function callBackendSignup(idToken: string) {
   try {
-    const response = await fetch("https://wildgaurd-backend-642935703539.asia-south1.run.app/auth/login", {
+    const response = await fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
