@@ -1,12 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { X, ArrowLeft, ArrowRight, MessageSquare, Share2, AlertTriangle, Leaf } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  X,
+  ArrowLeft,
+  ArrowRight,
+  AlertTriangle,
+  Leaf,
+  ChevronRight,
+} from "lucide-react";
 
-// Lightbox Component (unchanged)
+// Lightbox Component
 function Lightbox({
   images,
   currentIndex,
@@ -51,7 +62,11 @@ function Lightbox({
             animate ? "scale-100" : "scale-90"
           }`}
         />
-        <Button variant="ghost" onClick={onClose} className="absolute top-2 right-2 text-white">
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          className="absolute top-2 right-2 text-white"
+        >
           <X className="w-6 h-6" />
         </Button>
         {images.length > 1 && (
@@ -77,7 +92,7 @@ function Lightbox({
   );
 }
 
-// Helper function to determine urgency color
+// Urgency badge color
 const getUrgencyColor = (level: string) => {
   switch (level?.toLowerCase()) {
     case "critical":
@@ -93,7 +108,7 @@ const getUrgencyColor = (level: string) => {
   }
 };
 
-// Helper function to get animal icon
+// Animal emoji
 const getAnimalEmoji = (type: string) => {
   const animalType = type?.toLowerCase() || "";
   if (animalType.includes("bird")) return "🦜";
@@ -106,7 +121,7 @@ const getAnimalEmoji = (type: string) => {
   return "🐾";
 };
 
-// PostsFeed with backend fetch
+// Main feed component
 export function PostsFeed({ darkMode }: { darkMode: boolean }) {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +132,9 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch("https://wildgaurd-backend-642935703539.asia-south1.run.app/api/posts");
+        const res = await fetch(
+          "https://wildgaurd-backend-642935703539.asia-south1.run.app/api/posts"
+        );
         const data = await res.json();
         setPosts(data);
       } catch (error) {
@@ -136,11 +153,15 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
   };
 
   const goToPrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? lightboxImages.length - 1 : prev - 1));
+    setCurrentIndex((prev) =>
+      prev === 0 ? lightboxImages.length - 1 : prev - 1
+    );
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev === lightboxImages.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) =>
+      prev === lightboxImages.length - 1 ? 0 : prev + 1
+    );
   };
 
   if (loading) {
@@ -156,7 +177,20 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
 
   return (
     <>
-      <div className="w-full p-4 h-[calc(100vh-80px)] overflow-y-auto bg-gradient-to-b from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-950">
+      {lightboxOpen && (
+        <Lightbox
+          images={lightboxImages}
+          currentIndex={currentIndex}
+          onClose={() => setLightboxOpen(false)}
+          onPrev={goToPrev}
+          onNext={goToNext}
+        />
+      )}
+      <div
+        className={`w-full p-4 h-[calc(100vh-80px)] overflow-y-auto bg-gradient-to-b from-green-50 to-blue-50 ${
+          darkMode ? "dark:from-gray-900 dark:to-gray-950" : ""
+        }`}
+      >
         <div className="max-w-2xl mx-auto space-y-6">
           {posts.map((post) => (
             <Card
@@ -184,9 +218,11 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">{post.volunteer?.user?.name}</h3>
+                    <h3 className="text-lg font-semibold">
+                      {post.volunteer?.user?.name}
+                    </h3>
                     <Badge
-                      className={`${getUrgencyColor(post.urgencyLevel)} ml-2`}
+                      className={`${getUrgencyColor(post.urgencyLevel)} ml-2 rounded-half`}
                       variant="outline"
                     >
                       <AlertTriangle className="w-3 h-3 mr-1" />
@@ -198,130 +234,103 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                   </p>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="pt-0">
                 {/* Title and Description */}
                 <div className="mb-4">
                   <div className="flex items-center mb-2">
-                    <span className="text-2xl mr-2">{getAnimalEmoji(post.animalType)}</span>
+                    <span className="text-2xl mr-2">
+                      {getAnimalEmoji(post.animalType)}
+                    </span>
                     <h4 className="text-lg font-medium">
-                      {post.animalType || "Wildlife"} {post.incidentLocation ? `at ${post.incidentLocation}` : ""}
+                      {post.animalType || "Wildlife"}{" "}
+                      {post.incidentLocation
+                        ? `at ${post.incidentLocation}`
+                        : ""}
                     </h4>
                   </div>
-                  <p className="mb-3 text-gray-700 dark:text-gray-300">{post.description}</p>
+                  <p className="mb-3 text-gray-500 dark:text-gray-300">
+                    {post.description}
+                  </p>
                 </div>
 
                 {/* Incident Details */}
-                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm bg-green-50 dark:bg-gray-700/50 rounded-lg p-3 mb-4">
+                <div
+                  className={`mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm rounded-lg p-3 mb-4 ${
+                    darkMode ? "bg-gray-700/50" : "bg-gray-100/50"
+                  }`}
+                >
                   <div className="col-span-2 font-medium text-green-700 dark:text-green-400 mb-1 flex items-center">
                     <Leaf className="w-4 h-4 mr-1" />
                     Incident Details
                   </div>
-                  
-                  <div><span className="font-medium text-gray-600 dark:text-gray-400">Location:</span> {post.incidentLocation}</div>
-                  <div><span className="font-medium text-gray-600 dark:text-gray-400">Coordinates:</span> {post.geoLocation}</div>
-                  <div><span className="font-medium text-gray-600 dark:text-gray-400">Noticed:</span> {new Date(post.noticedAt).toLocaleString()}</div>
-                  <div><span className="font-medium text-gray-600 dark:text-gray-400">Current Actions:</span> {post.currentActions || "None taken yet"}</div>
+
+                  <div>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Location:
+                    </span>{" "}
+                    {post.incidentLocation}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Coordinates:
+                    </span>{" "}
+                    {post.geoLocation}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Noticed:
+                    </span>{" "}
+                    {new Date(post.noticedAt).toLocaleString()}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Current Actions:
+                    </span>{" "}
+                    {post.currentActions || "None taken yet"}
+                  </div>
                 </div>
 
-                {/* Volunteer Info - Collapsible */}
+                {/* Volunteer Info */}
                 {post.volunteer && (
-                  <details className="mt-2 mb-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <summary className="px-4 py-2 cursor-pointer font-medium bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                      Volunteer Contact Information
+                  <details className="group mt-2 mb-4 rounded-xl border border-green-300/50 dark:border-green-600/40 overflow-hidden">
+                    <summary className="flex items-center justify-between px-4 py-2 cursor-pointer font-semibold text-green-800 dark:text-green-300 bg-green-100/60 dark:bg-green-800/30 hover:bg-green-200/70 dark:hover:bg-green-700/40">
+                      <div className="flex items-center gap-2">
+                        <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                        Volunteer Contact Information
+                      </div>
                     </summary>
-                    <div className="p-4 text-sm grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div><span className="font-medium">Name:</span> {post.volunteer.user?.name}</div>
-                      <div><span className="font-medium">Email:</span> {post.volunteer.user?.email || "N/A"}</div>
-                      <div><span className="font-medium">Phone:</span> {post.volunteer.phone || "N/A"}</div>
-                      <div className="col-span-2"><span className="font-medium">Location:</span> {post.volunteer.location?.value}</div>
-                      <div className="col-span-2"><span className="font-medium">Skills:</span> {post.volunteer.skills?.join(", ") || "None listed"}</div>
+                    <div
+                      className={`p-4 text-sm grid grid-cols-2 gap-x-4 gap-y-2 rounded-b-xl transition-colors duration-200 ${
+                        darkMode
+                          ? "text-gray-300 bg-green-900/10"
+                          : "text-gray-700 bg-green-100/30"
+                      }`}
+                    >
+                      <div>
+                        <span className="font-medium">Name:</span>{" "}
+                        {post.volunteer.user?.name}
+                      </div>
+                      <div>
+                        <span className="font-medium">Phone:</span>{" "}
+                        {post.volunteer.phone || "N/A"}
+                      </div>
+                      <div>
+                        <span className="font-medium">Email:</span>{" "}
+                        {post.volunteer.user?.email || "N/A"}
+                      </div>
+                      <div>
+                        <span className="font-medium">Experience:</span>{" "}
+                        {post.volunteer.experience || "Not provided"}
+                      </div>
                     </div>
                   </details>
                 )}
-
-                {/* Images */}
-                {post.images?.length > 0 && (
-                  <div
-                    className={`mt-4 grid gap-2 ${
-                      post.images.length === 1
-                        ? "grid-cols-1"
-                        : post.images.length === 2
-                        ? "grid-cols-2"
-                        : "grid-cols-3"
-                    }`}
-                  >
-                    {post.images.map((imgUrl: string, idx: number) => (
-                      <div key={idx} className="relative group overflow-hidden rounded-lg">
-                        <img
-                          src={imgUrl}
-                          alt={`Post image ${idx + 1}`}
-                          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                          onClick={() => openLightbox(post.images, idx)}
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                          <span className="text-white font-medium">View</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </CardContent>
-
-              <CardFooter className="flex flex-col gap-3 pt-0">
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-2 w-full">
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    <Leaf className="w-4 h-4 mr-1" /> I Can Help
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950"
-                  >
-                    <MessageSquare className="w-4 h-4 mr-1" /> Need Info
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                  >
-                    <Share2 className="w-4 h-4 mr-1" /> Share
-                  </Button>
-                </div>
-
-                {/* Comment Input */}
-                <div className="mt-1 flex items-center gap-2 w-full">
-                  <Input
-                    placeholder="Leave a message or volunteer note..."
-                    className="w-full rounded-full border px-4 py-2 text-sm placeholder-gray-500 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-300"
-                  />
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4"
-                  >
-                    Send
-                  </Button>
-                </div>
-              </CardFooter>
             </Card>
           ))}
         </div>
       </div>
-      {lightboxOpen && (
-        <Lightbox
-          images={lightboxImages}
-          currentIndex={currentIndex}
-          onClose={() => setLightboxOpen(false)}
-          onPrev={goToPrev}
-          onNext={goToNext}
-        />
-      )}
     </>
   );
 }

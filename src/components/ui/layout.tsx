@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,23 +7,32 @@ import { PawPrint, Search, Sun, Moon } from "lucide-react";
 export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [darkMode, setDarkMode] = useState(true);
+
+  // Initialize darkMode from localStorage
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("darkMode") === "true";
+  });
+
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Update dark mode class on <html> tag
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   // Define paths where the navbar should be hidden
   const hideNavPaths = ["/volunteer-login", "/volunteer-dashboard", "/signup", "/complete-profile"];
 
-  // Handle search submission
   const handleSearch = () => {
-    // You can implement your search logic here
-    // For example, send the searchQuery to your backend API
     console.log("Searching for:", searchQuery);
-    // navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
   };
 
-  // Handle key press for search input
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
@@ -36,10 +45,9 @@ export function Layout() {
           : "bg-gray-50 text-gray-900"
       }`}
     >
-      {/* Conditionally render the NavBar */}
       {!hideNavPaths.includes(location.pathname) && (
         <header
-          className={`fixed top-0 w-full ${
+          className={`fixed top-0 left-0 right-0 w-full ${
             darkMode
               ? "bg-gray-900 bg-opacity-80 backdrop-blur-md"
               : "bg-white shadow-md"
@@ -54,7 +62,6 @@ export function Layout() {
             </h1>
           </div>
 
-          {/* Search Bar with Icon Inside */}
           <div className="relative w-full md:max-w-lg mt-2 md:mt-0 md:ml-27">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#0F9D58] w-5 h-5" />
             <Input
@@ -84,7 +91,11 @@ export function Layout() {
               NGO Login
             </Button>
             <Button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={() => {
+                const newMode = !darkMode;
+                setDarkMode(newMode);
+                localStorage.setItem("darkMode", String(newMode));
+              }}
               className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 transition"
             >
               {darkMode ? (
@@ -97,19 +108,20 @@ export function Layout() {
         </header>
       )}
 
-      {/* Main Content */}
-      <main className={hideNavPaths.includes(location.pathname) ? "" : "pt-20 flex-1"}>
+      <main className={hideNavPaths.includes(location.pathname) ? "" : "pt-28 md:pt-24 flex-1"}>
         <Outlet context={{ darkMode, searchQuery }} />
       </main>
 
-      {/* Footer */}
-      <footer
-        className={`text-center p-6 w-full ${
-          darkMode ? "bg-gray-900 text-gray-300" : "bg-gray-800 text-white"
-        }`}
-      >
-        <p>&copy; 2025 WildGuard. All Rights Reserved.</p>
-      </footer>
+      {/* <footer
+  className={`text-center p-2 w-full ${
+    darkMode
+      ? "bg-gray-900 text-gray-300" 
+      : "bg-white text-gray-800"
+  }`}
+  style={{ backgroundColor: darkMode ? '#121212' : '#ffffff' }}
+>
+  <p>&copy; 2025 WildGuard. All Rights Reserved.</p>
+</footer> */}
     </div>
   );
 }

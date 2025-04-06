@@ -68,17 +68,26 @@ const Navbar: React.FC<NavbarProps> = ({
     setAvatarSrc(photoURL || fallbackURL);
   }, [photoURL]);
 
-  console.log("User photoURL:", photoURL);
-
   return (
-    <header className="flex justify-between items-center mb-8">
-      <h1
-        className={`text-2xl font-bold ${
-          darkMode ? "text-white" : "text-gray-900"
-        }`}
-      >
-        Welcome back, {user?.displayName ? user.displayName : ""} 🐾
-      </h1>
+    <div>
+    <header
+  className={`w-full flex justify-between items-center pt-4 pl-4 pr-4 ${
+    !darkMode ? 'bg-gradient-to-b from-green-100' : ''
+  }`}
+>
+
+      
+<h1 className="text-2xl font-semibold tracking-tight">
+  <span className={darkMode ? 'text-lime-300' : 'text-lime-600'}>
+    Welcome back,
+  </span>{' '}
+  <span className={darkMode ? 'text-indigo-300' : 'text-indigo-600'}>
+    {user?.displayName || ''}
+  </span>{' '}
+  🐾
+</h1>
+
+
       <div className="flex items-center gap-4">
         <div className="relative">
           <Button
@@ -224,6 +233,7 @@ const Navbar: React.FC<NavbarProps> = ({
         </DropdownMenu>
       </div>
     </header>
+    </div>
   );
 };
 
