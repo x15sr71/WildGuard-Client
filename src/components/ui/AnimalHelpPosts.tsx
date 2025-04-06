@@ -7,17 +7,20 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   X,
   ArrowLeft,
   ArrowRight,
+  MessageSquare,
+  Share2,
   AlertTriangle,
   Leaf,
   ChevronRight,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-// Lightbox Component
+// Lightbox Component (unchanged)
 function Lightbox({
   images,
   currentIndex,
@@ -92,7 +95,7 @@ function Lightbox({
   );
 }
 
-// Urgency badge color
+// Helper function to determine urgency color
 const getUrgencyColor = (level: string) => {
   switch (level?.toLowerCase()) {
     case "critical":
@@ -108,7 +111,7 @@ const getUrgencyColor = (level: string) => {
   }
 };
 
-// Animal emoji
+// Helper function to get animal icon
 const getAnimalEmoji = (type: string) => {
   const animalType = type?.toLowerCase() || "";
   if (animalType.includes("bird")) return "🦜";
@@ -121,7 +124,7 @@ const getAnimalEmoji = (type: string) => {
   return "🐾";
 };
 
-// Main feed component
+// PostsFeed with backend fetch
 export function PostsFeed({ darkMode }: { darkMode: boolean }) {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,15 +180,6 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
 
   return (
     <>
-      {lightboxOpen && (
-        <Lightbox
-          images={lightboxImages}
-          currentIndex={currentIndex}
-          onClose={() => setLightboxOpen(false)}
-          onPrev={goToPrev}
-          onNext={goToNext}
-        />
-      )}
       <div
         className={`w-full p-4 h-[calc(100vh-80px)] overflow-y-auto bg-gradient-to-b from-green-50 to-blue-50 ${
           darkMode ? "dark:from-gray-900 dark:to-gray-950" : ""
@@ -291,46 +285,137 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                   </div>
                 </div>
 
-                {/* Volunteer Info */}
+                {/* Volunteer Info - Collapsible */}
                 {post.volunteer && (
-                  <details className="group mt-2 mb-4 rounded-xl border border-green-300/50 dark:border-green-600/40 overflow-hidden">
-                    <summary className="flex items-center justify-between px-4 py-2 cursor-pointer font-semibold text-green-800 dark:text-green-300 bg-green-100/60 dark:bg-green-800/30 hover:bg-green-200/70 dark:hover:bg-green-700/40">
+<details className="group mt-2 mb-4 rounded-xl border border-green-300/50 dark:border-green-600/40 bg-green-50/30 dark:bg-green-900/10 backdrop-blur-sm transition-colors overflow-hidden">
+  <summary className="flex items-center justify-between px-4 py-2 cursor-pointer font-semibold text-green-800 dark:text-green-300 bg-green-100/60 dark:bg-green-800/30 hover:bg-green-200/70 dark:hover:bg-green-700/40">
+
                       <div className="flex items-center gap-2">
-                        <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                        <ChevronRight className="h-4 w-4 text-green-700 dark:text-green-300 transition-transform group-open:rotate-90" />
                         Volunteer Contact Information
                       </div>
                     </summary>
+
                     <div
-                      className={`p-4 text-sm grid grid-cols-2 gap-x-4 gap-y-2 rounded-b-xl transition-colors duration-200 ${
-                        darkMode
-                          ? "text-gray-300 bg-green-900/10"
-                          : "text-gray-700 bg-green-100/30"
-                      }`}
+                      className={`
+    p-4 text-sm grid grid-cols-2 gap-x-4 gap-y-2 rounded-b-xl 
+    ${darkMode ? "text-gray-300 bg-black/20" : "text-gray-700 bg-white/40"}
+  `}
                     >
                       <div>
                         <span className="font-medium">Name:</span>{" "}
                         {post.volunteer.user?.name}
                       </div>
                       <div>
-                        <span className="font-medium">Phone:</span>{" "}
-                        {post.volunteer.phone || "N/A"}
-                      </div>
-                      <div>
                         <span className="font-medium">Email:</span>{" "}
                         {post.volunteer.user?.email || "N/A"}
                       </div>
                       <div>
-                        <span className="font-medium">Experience:</span>{" "}
-                        {post.volunteer.experience || "Not provided"}
+                        <span className="font-medium">Phone:</span>{" "}
+                        {post.volunteer.phone || "N/A"}
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-medium">Location:</span>{" "}
+                        {post.volunteer.location?.value}
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-medium">Skills:</span>{" "}
+                        {post.volunteer.skills?.join(", ") || "None listed"}
                       </div>
                     </div>
                   </details>
                 )}
+
+                {/* Images */}
+                {post.images?.length > 0 && (
+                  <div
+                    className={`mt-4 grid gap-2 ${
+                      post.images.length === 1
+                        ? "grid-cols-1"
+                        : post.images.length === 2
+                        ? "grid-cols-2"
+                        : "grid-cols-3"
+                    }`}
+                  >
+                    {post.images.map((imgUrl: string, idx: number) => (
+                      <div
+                        key={idx}
+                        className="relative group overflow-hidden rounded-lg"
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`Post image ${idx + 1}`}
+                          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                          onClick={() => openLightbox(post.images, idx)}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                          <span className="text-white font-medium">View</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
+
+              <CardFooter className="flex flex-col gap-3 pt-0">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2 w-full">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Leaf className="w-4 h-4 mr-1" /> I Can Help
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-1" /> Need Info
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    <Share2 className="w-4 h-4 mr-1" /> Share
+                  </Button>
+                </div>
+
+                {/* Comment Input */}
+                <div className="mt-1 flex items-center gap-2 w-full">
+                  <Input
+                    placeholder="Leave a message or volunteer note..."
+                    className={`w-full rounded-full border px-4 py-2 text-sm placeholder-gray-500 focus:border-green-500 focus:ring-green-500 ${
+                      darkMode
+                        ? "border-gray-600 bg-gray-700 text-white placeholder-gray-300"
+                        : ""
+                    }`}
+                  />
+
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4"
+                  >
+                    Send
+                  </Button>
+                </div>
+              </CardFooter>
             </Card>
           ))}
         </div>
       </div>
+      {lightboxOpen && (
+        <Lightbox
+          images={lightboxImages}
+          currentIndex={currentIndex}
+          onClose={() => setLightboxOpen(false)}
+          onPrev={goToPrev}
+          onNext={goToNext}
+        />
+      )}
     </>
   );
 }
