@@ -168,7 +168,7 @@ const PostRequest: React.FC<PostRequestProps> = ({
       formData.append("data", JSON.stringify(payload));
 
       const response = await axios.post(
-        "http://localhost:3000/api/post-request",
+        "https://wildgaurd-backend-642935703539.asia-south1.run.app/api/post-request",
         formData,
         {
           headers: {

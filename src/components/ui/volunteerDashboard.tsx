@@ -56,9 +56,6 @@ const VolunteerDashboard: React.FC = () => {
     },
   ];
 
-  // Sample data for Animal Help Posts
-
-
   const unreadNotifications = notifications.filter((n) => !n.read).length;
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +84,7 @@ const VolunteerDashboard: React.FC = () => {
       console.log("Sending request with data:", requestData);
 
       const response = await axios.post(
-        "http://localhost:3000/animalHelpPost",
+        "https://wildgaurd-backend-642935703539.asia-south1.run.app/animalHelpPost",
         requestData,
         {
           headers: {
@@ -118,18 +115,18 @@ const VolunteerDashboard: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
-      <div className="flex">
-        <Sidebar darkMode={darkMode} setSelectedView={setSelectedView} />
-        <div className="ml-64 flex-1 p-8">
-          <Navbar
-            darkMode={darkMode}
-            toggleDarkMode={toggleDarkMode}
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-            notifications={notifications}
-            unreadNotifications={unreadNotifications}
-            setSelectedLocation={setSelectedLocation}
-          />
+      <Sidebar darkMode={darkMode} setSelectedView={setSelectedView} />
+      <div className="pl-64">
+        <Navbar
+          darkMode={darkMode}
+          toggleDarkMode={toggleDarkMode}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          notifications={notifications}
+          unreadNotifications={unreadNotifications}
+          setSelectedLocation={setSelectedLocation}
+        />
+        <div className="p-4">
           {selectedView === "home" && (
             <PostRequest
               darkMode={darkMode}
@@ -157,7 +154,7 @@ const VolunteerDashboard: React.FC = () => {
               rescueRequests={rescueRequests}
             />
           )}
-           {selectedView === "animalHelpPosts" && <PostsFeed darkMode={darkMode} />}
+          {selectedView === "animalHelpPosts" && <PostsFeed darkMode={darkMode} />}
         </div>
       </div>
     </div>
