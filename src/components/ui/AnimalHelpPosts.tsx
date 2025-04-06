@@ -364,7 +364,6 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [comments, setComments] = useState<{[postId: string]: any[]}>({});
   const [commentInputs, setCommentInputs] = useState<{[postId: string]: string}>({});
-  const [replyingTo, setReplyingTo] = useState<{postId: string, commentId: string} | null>(null);
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -431,46 +430,13 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
       userName: userName || "Anonymous User",
       userImage: userImage || `https://ui-avatars.com/api/?name=${encodeURIComponent("AU")}&background=4ade80&color=ffffff`,
       text: commentInputs[postId],
-      timestamp: new Date(),
-      replies: []
+      timestamp: new Date()
     };
     
-    if (replyingTo && replyingTo.postId === postId) {
-      // This is a reply to an existing comment
-      setComments(prev => {
-        const updatedComments = { ...prev };
-        
-        // Helper function to add reply to nested comment structure
-        const addReplyToComment = (comments: any[], parentId: string): any[] => {
-          return comments.map(comment => {
-            if (comment.id === parentId) {
-              return {
-                ...comment,
-                replies: [...(comment.replies || []), newComment]
-              };
-            } else if (comment.replies && comment.replies.length > 0) {
-              return {
-                ...comment,
-                replies: addReplyToComment(comment.replies, parentId)
-              };
-            } else {
-              return comment;
-            }
-          });
-        };
-        
-        updatedComments[postId] = addReplyToComment(updatedComments[postId], replyingTo.commentId);
-        return updatedComments;
-      });
-      
-      setReplyingTo(null); // Reset replying state
-    } else {
-      // This is a new top-level comment
-      setComments(prev => ({
-        ...prev,
-        [postId]: [...(prev[postId] || []), newComment]
-      }));
-    }
+    setComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), newComment]
+    }));
     
     setCommentInputs(prev => ({
       ...prev,
@@ -480,47 +446,6 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
     // Scroll to the latest comment
     setTimeout(() => {
       commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-  };
-  
-  const handleDeleteComment = (postId: string, commentId: string) => {
-    setComments(prev => {
-      const updatedComments = { ...prev };
-      
-      // Helper function to remove comment from nested structure
-      const removeComment = (comments: any[], targetId: string): any[] => {
-        return comments.filter(comment => {
-          if (comment.id === targetId) {
-            return false;
-          }
-          
-          if (comment.replies && comment.replies.length > 0) {
-            comment.replies = removeComment(comment.replies, targetId);
-          }
-          
-          return true;
-        });
-      };
-      
-      updatedComments[postId] = removeComment(updatedComments[postId], commentId);
-      return updatedComments;
-    });
-    
-    // If we were replying to the comment that was deleted, reset the reply state
-    if (replyingTo && replyingTo.commentId === commentId) {
-      setReplyingTo(null);
-    }
-  };
-  
-  const handleReplyToComment = (postId: string, commentId: string) => {
-    setReplyingTo({ postId, commentId });
-    
-    // Focus on the comment input
-    setTimeout(() => {
-      const inputElement = document.getElementById(`comment-input-${postId}`);
-      if (inputElement) {
-        inputElement.focus();
-      }
     }, 100);
   };
 
@@ -534,8 +459,6 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
       </div>
     );
   }
-
-  // Rest of the PostsFeed component remains the same until the Comments Section
 
   return (
     <>
@@ -570,7 +493,7 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-cen  ter justify-between">
                     <h3 className="text-lg font-semibold">
                       {post.volunteer?.user?.name}
                     </h3>
@@ -741,7 +664,7 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                   </div>
                 )}
                 
-                {/* Updated Comments Section */}
+                {/* Comments Section */}
                 {comments[post.id]?.length > 0 && (
                   <div className={`mt-4 border-t ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
                     <h4 className={`font-medium mt-3 mb-2 flex items-center ${
@@ -752,14 +675,7 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                     </h4>
                     <div className="max-h-60 overflow-y-auto pr-2">
                       {comments[post.id].map((comment) => (
-                        <Comment 
-                          key={comment.id} 
-                          comment={comment} 
-                          darkMode={darkMode}
-                          onDelete={(commentId) => handleDeleteComment(post.id, commentId)}
-                          onReply={(commentId) => handleReplyToComment(post.id, commentId)}
-                          replies={comment.replies || []}
-                        />
+                        <Comment key={comment.id} comment={comment} darkMode={darkMode} />
                       ))}
                       <div ref={commentsEndRef} />
                     </div>
@@ -805,86 +721,40 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                     </Popover>
                   </div>
 
-                  {/* Comment Input - Updated with reply UI */}
-                  <div className="mt-1 w-full">
-                    {replyingTo && replyingTo.postId === post.id && (
-                      <div className={`flex items-center mb-2 px-3 py-2 rounded ${
-                        darkMode ? "bg-gray-700" : "bg-gray-100"
-                      }`}>
-                        <span className={`text-xs ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                          Replying to comment
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setReplyingTo(null)}
-                          className={`ml-auto p-1 h-6 w-6 rounded-full ${
-                            darkMode ? "hover:bg-gray-600 text-gray-400" : "hover:bg-gray-200 text-gray-500"
-                          }`}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarImage 
-                          src={post.volunteer?.user?.imageUrl || 
-                            `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                              post.volunteer?.user?.name || "User"
-                            )}&background=4ade80&color=ffffff`} 
-                          alt={post.volunteer?.user?.name || "Current User"} 
-                        />
-                        <AvatarFallback className="bg-green-500 text-white">
-                          {(post.volunteer?.user?.name || "U").charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex flex-1 items-center gap-2">
-                        <Input
-                          id={`comment-input-${post.id}`}
-                          placeholder={replyingTo && replyingTo.postId === post.id 
-                            ? "Write a reply..." 
-                            : "Leave a comment..."}
-                          value={commentInputs[post.id] || ""}
-                          onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              handleCommentSubmit(
-                                post.id, 
-                                post.volunteer?.user?.name || "Anonymous", 
-                                post.volunteer?.user?.imageUrl || 
-                                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                    post.volunteer?.user?.name || "AU"
-                                  )}&background=4ade80&color=ffffff`
-                              );
-                            }
-                          }}
-                          className={`w-full rounded-full border px-4 py-2 text-sm placeholder-gray-500 focus:border-green-500 focus:ring-green-500 ${
-                            darkMode
-                              ? "border-gray-600 bg-gray-700 text-white placeholder-gray-300"
-                              : ""
-                          }`}
-                        />
-
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleCommentSubmit(
+                  {/* Comment Input */}
+                  <div className="mt-1 flex items-center gap-2 w-full">
+                    <Input
+                      placeholder="Leave a message or volunteer note..."
+                      value={commentInputs[post.id] || ""}
+                      onChange={(e) => handleCommentChange(post.id, e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCommentSubmit(
                             post.id, 
-                            post.volunteer?.user?.name || "Anonymous", 
-                            post.volunteer?.user?.imageUrl || 
-                              `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                post.volunteer?.user?.name || "AU"
-                              )}&background=4ade80&color=ffffff`
-                          )}
-                          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4"
-                        >
-                          Send
-                        </Button>
-                      </div>
-                    </div>
+                            `${post.volunteer?.user?.name }`, 
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent("CU")}&background=4ade80&color=ffffff`
+                          );
+                        }
+                      }}
+                      className={`w-full rounded-full border px-4 py-2 text-sm placeholder-gray-500 focus:border-green-500 focus:ring-green-500 ${
+                        darkMode
+                          ? "border-gray-600 bg-gray-700 text-white placeholder-gray-300"
+                          : ""
+                      }`}
+                    />
+
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleCommentSubmit(
+                        post.id, 
+                        `${post.volunteer?.user?.name }`, 
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent("CU")}&background=4ade80&color=ffffff`
+                      )}
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4"
+                    >
+                      Send
+                    </Button>
                   </div>
                 </CardFooter>
             </Card>
