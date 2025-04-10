@@ -675,7 +675,21 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
                     </h4>
                     <div className="max-h-60 overflow-y-auto pr-2">
                       {comments[post.id].map((comment) => (
-                        <Comment key={comment.id} comment={comment} darkMode={darkMode} />
+                        <Comment 
+                          key={comment.id} 
+                          comment={comment} 
+                          darkMode={darkMode}
+                          onDelete={(id) => {
+                            setComments(prev => ({
+                              ...prev,
+                              [post.id]: prev[post.id].filter(c => c.id !== id)
+                            }));
+                          }}
+                          onReply={(id) => {
+                            // Handle reply functionality
+                            console.log('Reply to comment:', id);
+                          }}
+                        />
                       ))}
                       <div ref={commentsEndRef} />
                     </div>
