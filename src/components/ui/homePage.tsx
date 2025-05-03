@@ -120,7 +120,7 @@ export function HomePage() {
       try {
         // Send the image and location data to the /gemini endpoint
         const response = await axios.post<{ imageSummary?: string } & Record<string, any>[]>(
-          "https://wildgaurd-backend-642935703539.asia-south1.run.app/gemini",
+          "http://localhost:8080/gemini",
           { 
             image: base64Image,
             location: currentUserLocation // Send the stored location here

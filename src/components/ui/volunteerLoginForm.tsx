@@ -22,7 +22,7 @@ import { auth } from "../../firebase/firebaseInitialize"; // adjust path based o
 // Helper function to call your backend /auth/login endpoint
 async function callBackendLogin(idToken: string) {
   try {
-    const response = await fetch("https://wildgaurd-backend-642935703539.asia-south1.run.app/auth/login", {
+    const response = await fetch("http://localhost:8080/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -109,7 +109,7 @@ export function VolunteerLoginForm() {
       console.log("Backend login success:", backendResponse);
 
       // Check if user has completed their profile
-      const profileResponse = await fetch(`https://wildgaurd-backend-642935703539.asia-south1.run.app/volunteer-profile`, {
+      const profileResponse = await fetch(`http://localhost:8080/volunteer-profile`, {
         method: "GET",
         headers: { Authorization: `Bearer ${idToken}` },
       });

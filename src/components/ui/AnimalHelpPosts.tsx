@@ -370,7 +370,7 @@ export function PostsFeed({ darkMode }: { darkMode: boolean }) {
     const fetchPosts = async () => {
       try {
         const res = await fetch(
-          "https://wildgaurd-backend-642935703539.asia-south1.run.app/api/posts"
+          "http://localhost:8080/api/posts"
         );
         const data = await res.json();
         setPosts(data);

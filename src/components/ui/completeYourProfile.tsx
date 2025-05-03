@@ -24,7 +24,7 @@ interface VolunteerProfileData {
 async function submitVolunteerProfile(data: VolunteerProfileData, idToken: string) {
   console.log("submitVolunteerProfile called with:", data);
   try {
-    const res = await fetch("https://wildgaurd-backend-642935703539.asia-south1.run.app/volunteer-profile", {
+    const res = await fetch("http://localhost:8080/volunteer-profile", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
