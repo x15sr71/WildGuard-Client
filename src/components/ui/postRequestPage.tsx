@@ -82,7 +82,7 @@ const PostRequest: React.FC<PostRequestProps> = ({
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
           address
-        )}&key=AIzaSyDNNeLMYjAf_V2eEVJQPmf7j2M8TzXqyO8`
+        )}&key=AIzaSyAuiOXo8UPqbJ8XtyZfh-mY45-2ITcWQy8`
       );
       const data = await response.json();
       if (data.results && data.results.length > 0) {
@@ -168,7 +168,7 @@ const PostRequest: React.FC<PostRequestProps> = ({
       formData.append("data", JSON.stringify(payload));
 
       const response = await axios.post(
-        "https://wildgaurd-backend-642935703539.asia-south1.run.app/api/post-request",
+        "https://wildgaurd-backend-794553988056.asia-south1.run.app/api/post-request",
         formData,
         {
           headers: {

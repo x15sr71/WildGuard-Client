@@ -2,7 +2,7 @@ import axios from "axios";
 import { auth } from "./firebaseInitialize";
 
 const api = axios.create({
-  baseURL: "https://wildgaurd-backend-642935703539.asia-south1.run.app",
+  baseURL: "https://wildgaurd-backend-794553988056.asia-south1.run.app",
 });
 
 // Attach fresh Firebase token and firebaseId (from localStorage) to every request
